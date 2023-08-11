@@ -1,38 +1,62 @@
 // const Discord = require('discord.js');
 require('dotenv').config();
-const { Client, Events, GatewayIntentBits } = require('discord.js');
+const fs = require('node:fs');
+const path = require('node:path');
+
+const { Client, Collection, Events, GatewayIntentBits } = require('discord.js');
 const client = new Client({ intents: [
 	GatewayIntentBits.Guilds,
 	GatewayIntentBits.MessageContent,
 ] });
+
+client.commands = new Collection();
+
+const commandsPath = path.join(__dirname, 'commands');
+const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.js'));
+
+for (const file of commandFiles) {
+	const filePath = path.join(commandsPath, file);
+	const command = require(filePath);
+	// Set a new item in the Collection with the key as the command name and the value as the exported module
+	if ('data' in command && 'execute' in command) {
+		client.commands.set(command.data.name, command);
+	}
+	else {
+		console.log(`[WARNING] The command at ${filePath} is missing a required "data" or "execute" property.`);
+	}
+}
+
 // Set your desired command prefix
-const prefix = '!';
+// const prefix = '!';
 
 const DISCORD_BOT_TOKEN = process.env.DISCORD_BOT_TOKEN;
 
-client.on('ready', () => {
-	console.log(`Logged in as ${client.user.tag}`);
-});
+client.on(Events.InteractionCreate, async interaction => {
+	if (!interaction.isChatInputCommand()) return;
 
-client.on('message', async (message) => {
-	if (message.author.bot) return;
+	const command = interaction.client.commands.get(interaction.commandName);
 
-	if (message.content.startsWith(`${prefix}create_matchup`)) {
-	// Create a new matchup message in the #match-up channel
-		const matchupMessage = await message.channel.send('New matchup! React to join.');
-		await matchupMessage.react('✅');
+	if (!command) {
+		console.error(`No command matching ${interaction.commandName} was found.`);
+		return;
 	}
-});
 
-client.on('messageReactionAdd', async (reaction, user) => {
-	if (user.bot) return;
-
-	if (reaction.message.channel.name === 'match-up' && reaction.emoji.name === '✅') {
-		const joinedUser = reaction.message.guild.members.cache.get(user.id);
-		await reaction.message.channel.send(`${joinedUser} has joined the race!`);
-		// Add logic to initiate the race, send server invite links, etc.
+	try {
+		await command.execute(interaction);
 	}
+	catch (error) {
+		console.error(error);
+		if (interaction.replied || interaction.deferred) {
+			await interaction.followUp({ content: 'There was an error while executing this command!', ephemeral: true });
+		}
+		else {
+			await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });
+		}
+	}
+
+	console.log(interaction);
 });
+
 
 // Replace 'YOUR_BOT_TOKEN' with your actual bot token
 client.login(DISCORD_BOT_TOKEN);
