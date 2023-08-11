@@ -1,5 +1,6 @@
-const Discord = require('discord.js');
-const client = new Discord.Client();
+//const Discord = require('discord.js');
+const { Client, Intents } = require('discord.js');
+const client = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES, Intents.FLAGS.MESSAGE_REACTIONS]});
 const prefix = '!'; // Set your desired command prefix
 
 const DISCORD_BOT_TOKEN = process.env.DISCORD_BOT_TOKEN
