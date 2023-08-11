@@ -1,33 +1,36 @@
-//const Discord = require('discord.js');
-const { Client, Intents } = require('discord.js');
-const client = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES, Intents.FLAGS.MESSAGE_REACTIONS]});
-const prefix = '!'; // Set your desired command prefix
+// const Discord = require('discord.js');
+const { Client, Events, GatewayIntentBits } = require('discord.js');
+const client = new Client({ intents: [
+	GatewayIntentBits.Guilds,
+	GatewayIntentBits.MessageContent,
+] });
+// Set your desired command prefix
+const prefix = '!';
 
-const DISCORD_BOT_TOKEN = process.env.DISCORD_BOT_TOKEN
+const DISCORD_BOT_TOKEN = process.env.DISCORD_BOT_TOKEN;
 
 client.on('ready', () => {
-  console.log(`Logged in as ${client.user.tag}`);
+	console.log(`Logged in as ${client.user.tag}`);
 });
 
 client.on('message', async (message) => {
-  if (message.author.bot) return;
+	if (message.author.bot) return;
 
-  if (message.content.startsWith(`${prefix}create_matchup`)) {
-    // Create a new matchup message in the #match-up channel
-    const matchupMessage = await message.channel.send('New matchup! React to join.');
-    await matchupMessage.react('✅');
-  }
+	if (message.content.startsWith(`${prefix}create_matchup`)) {
+	// Create a new matchup message in the #match-up channel
+		const matchupMessage = await message.channel.send('New matchup! React to join.');
+		await matchupMessage.react('✅');
+	}
 });
 
 client.on('messageReactionAdd', async (reaction, user) => {
-  if (user.bot) return;
+	if (user.bot) return;
 
-  if (reaction.message.channel.name === 'match-up' && reaction.emoji.name === '✅') {
-    const joinedUser = reaction.message.guild.members.cache.get(user.id);
-    await reaction.message.channel.send(`${joinedUser} has joined the race!`);
-
-    // Add logic to initiate the race, send server invite links, etc.
-  }
+	if (reaction.message.channel.name === 'match-up' && reaction.emoji.name === '✅') {
+		const joinedUser = reaction.message.guild.members.cache.get(user.id);
+		await reaction.message.channel.send(`${joinedUser} has joined the race!`);
+		// Add logic to initiate the race, send server invite links, etc.
+	}
 });
 
 // Replace 'YOUR_BOT_TOKEN' with your actual bot token
