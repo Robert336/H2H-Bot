@@ -2,6 +2,8 @@ const Discord = require('discord.js');
 const client = new Discord.Client();
 const prefix = '!'; // Set your desired command prefix
 
+const DISCORD_BOT_TOKEN = process.env.DISCORD_BOT_TOKEN
+
 client.on('ready', () => {
   console.log(`Logged in as ${client.user.tag}`);
 });
@@ -28,4 +30,4 @@ client.on('messageReactionAdd', async (reaction, user) => {
 });
 
 // Replace 'YOUR_BOT_TOKEN' with your actual bot token
-client.login('YOUR_BOT_TOKEN');
+client.login(DISCORD_BOT_TOKEN);
