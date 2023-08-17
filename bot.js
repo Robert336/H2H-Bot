@@ -2,7 +2,7 @@ require('dotenv').config();
 const fs = require('node:fs');
 const path = require('node:path');
 const DISCORD_BOT_TOKEN = process.env.DISCORD_BOT_TOKEN;
-const { Client, Collection, Events, GatewayIntentBits } = require('discord.js');
+const { Client, Collection, GatewayIntentBits } = require('discord.js');
 const client = new Client({ intents: [
 	GatewayIntentBits.Guilds,
 	GatewayIntentBits.MessageContent,
@@ -36,7 +36,8 @@ for (const file of eventFiles) {
 	const event = require(filePath);
 	if (event.once) {
 		client.once(event.name, (...args) => event.execute(...args));
-	} else {
+	}
+	else {
 		client.on(event.name, (...args) => event.execute(...args));
 	}
 }
